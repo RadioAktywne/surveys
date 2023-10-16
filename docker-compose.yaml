@@ -1,0 +1,68 @@
+services:
+  graphql:
+    build: graphql
+    restart: unless-stopped
+    ports:
+      - "${GRAPHQL_PUBLISHED_PORT:-30004}:30004"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - "GRAPHQL_DATABASE_USER=${GRAPHQL_DATABASE_USER:-user}"
+      - "GRAPHQL_DATABASE_PASSWORD=${GRAPHQL_DATABASE_PASSWORD:-password}"
+      - "GRAPHQL_DATABASE_HOST=${GRAPHQL_DATABASE_HOST:-database}"
+      - "GRAPHQL_DATABASE_PORT=${GRAPHQL_DATABASE_PORT:-30001}"
+      - "GRAPHQL_DATABASE_NAME=${GRAPHQL_DATABASE_NAME:-database}"
+      - "GRAPHQL_REDIS_HOST=${GRAPHQL_REDIS_HOST:-redis}"
+      - "GRAPHQL_REDIS_PORT=${GRAPHQL_REDIS_PORT:-30002}"
+      - "GRAPHQL_ADMIN_USER=${GRAPHQL_ADMIN_USER:-admin}"
+      - "GRAPHQL_ADMIN_PASSWORD=${GRAPHQL_ADMIN_PASSWORD:-password}"
+      - "GRAPHQL_ADMIN_EMAIL=${GRAPHQL_ADMIN_EMAIL:-it@radioaktywne.pl}"
+      - "GRAPHQL_SECRET_KEY=${GRAPHQL_SECRET_KEY:-secret}"
+      - "GRAPHQL_WEB_PUBLIC_URL=${GRAPHQL_WEB_PUBLIC_URL:-http://localhost:30000}"
+    depends_on:
+      - database
+      - redis
+  database:
+    build: database
+    restart: unless-stopped
+    ports:
+      - "${DATABASE_PUBLISHED_PORT:-30001}:30001"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - "DATABASE_USER=${DATABASE_USER:-user}"
+      - "DATABASE_PASSWORD=${DATABASE_PASSWORD:-password}"
+      - "DATABASE_NAME=${DATABASE_NAME:-database}"
+    volumes:
+      - database:/app/data
+  redis:
+    build: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PUBLISHED_PORT:-30002}:30002"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  traefik:
+    build: traefik
+    restart: unless-stopped
+    ports:
+      - "${TRAEFIK_PUBLISHED_PORT:-30000}:30000"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - "TRAEFIK_WEB_URL=${TRAEFIK_WEB_URL:-http://web:30003}"
+      - "TRAEFIK_GRAPHQL_URL=${TRAEFIK_GRAPHQL_URL:-http://graphql:30004}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+  web:
+    build: web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PUBLISHED_PORT:-30003}:30003"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - graphql
+
+volumes:
+  database: {}
