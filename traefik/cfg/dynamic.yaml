@@ -1,0 +1,17 @@
+http:
+  services:
+    graphql:
+      loadBalancer:
+        servers:
+          - url: "${TRAEFIK_GRAPHQL_URL}"
+    web:
+      loadBalancer:
+        servers:
+          - url: "${TRAEFIK_WEB_URL}"
+  routers:
+    graphql:
+      rule: PathPrefix(`/graphql`)
+      service: graphql
+    web:
+      rule: PathPrefix(`/`)
+      service: web
