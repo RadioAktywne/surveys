@@ -1,6 +1,3 @@
-api:
-  dashboard: true
-
 entryPoints:
   http:
     address: :30000

@@ -12,8 +12,12 @@ RUN chmod +x ./src/start.sh
 
 COPY ./cfg/ ./cfg/
 
-ENV TRAEFIK_WEB_URL=http://web:30003 \
-    TRAEFIK_GRAPHQL_URL=http://graphql:30004
+ENV TRAEFIK_API_HOST=api \
+    TRAEFIK_API_PORT=30005 \
+    TRAEFIK_GRAPHQL_HOST=graphql \
+    TRAEFIK_GRAPHQL_PORT=30004 \
+    TRAEFIK_WEB_HOST=web \
+    TRAEFIK_WEB_PORT=30003
 
 EXPOSE 30000
 
