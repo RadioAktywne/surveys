@@ -1,4 +1,31 @@
 services:
+  api:
+    build: api
+    restart: unless-stopped
+    ports:
+      - "${API_PUBLISHED_PORT:-30005}:30005"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - "API_GRAPHQL_HOST=${API_GRAPHQL_HOST:-graphql}"
+      - "API_GRAPHQL_PORT=${API_GRAPHQL_PORT:-30004}"
+      - "API_GRAPHQL_USER=${API_GRAPHQL_USER:-admin}"
+      - "API_GRAPHQL_PASSWORD=${API_GRAPHQL_PASSWORD:-password}"
+    depends_on:
+      - graphql
+  database:
+    build: database
+    restart: unless-stopped
+    ports:
+      - "${DATABASE_PUBLISHED_PORT:-30001}:30001"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - "DATABASE_USER=${DATABASE_USER:-user}"
+      - "DATABASE_PASSWORD=${DATABASE_PASSWORD:-password}"
+      - "DATABASE_NAME=${DATABASE_NAME:-database}"
+    volumes:
+      - database:/app/data
   graphql:
     build: graphql
     restart: unless-stopped
@@ -22,19 +49,6 @@ services:
     depends_on:
       - database
       - redis
-  database:
-    build: database
-    restart: unless-stopped
-    ports:
-      - "${DATABASE_PUBLISHED_PORT:-30001}:30001"
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    environment:
-      - "DATABASE_USER=${DATABASE_USER:-user}"
-      - "DATABASE_PASSWORD=${DATABASE_PASSWORD:-password}"
-      - "DATABASE_NAME=${DATABASE_NAME:-database}"
-    volumes:
-      - database:/app/data
   redis:
     build: redis
     restart: unless-stopped
@@ -50,8 +64,12 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     environment:
-      - "TRAEFIK_WEB_URL=${TRAEFIK_WEB_URL:-http://web:30003}"
-      - "TRAEFIK_GRAPHQL_URL=${TRAEFIK_GRAPHQL_URL:-http://graphql:30004}"
+      - "TRAEFIK_API_HOST=${TRAEFIK_API_HOST:-api}"
+      - "TRAEFIK_API_PORT=${TRAEFIK_API_PORT:-30005}"
+      - "TRAEFIK_GRAPHQL_HOST=${TRAEFIK_GRAPHQL_HOST:-graphql}"
+      - "TRAEFIK_GRAPHQL_PORT=${TRAEFIK_GRAPHQL_PORT:-30004}"
+      - "TRAEFIK_WEB_HOST=${TRAEFIK_WEB_HOST:-web}"
+      - "TRAEFIK_WEB_PORT=${TRAEFIK_WEB_PORT:-30003}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
   web:

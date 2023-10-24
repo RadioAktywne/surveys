@@ -1,14 +1,29 @@
 http:
+  middlewares:
+    api:
+      stripPrefix:
+        forceSlash: false
+        prefixes:
+          - /api
   services:
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://${TRAEFIK_API_HOST}:${TRAEFIK_API_PORT}"
     graphql:
       loadBalancer:
         servers:
-          - url: "${TRAEFIK_GRAPHQL_URL}"
+          - url: "http://${TRAEFIK_GRAPHQL_HOST}:${TRAEFIK_GRAPHQL_PORT}"
     web:
       loadBalancer:
         servers:
-          - url: "${TRAEFIK_WEB_URL}"
+          - url: "http://${TRAEFIK_WEB_HOST}:${TRAEFIK_WEB_PORT}"
   routers:
+    api:
+      middlewares:
+        - api
+      rule: PathPrefix(`/api`)
+      service: api
     graphql:
       rule: PathPrefix(`/graphql`)
       service: graphql
