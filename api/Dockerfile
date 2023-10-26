@@ -65,7 +65,7 @@ RUN poetry build --no-interaction --format wheel && \
     python -m pip install --no-deps --no-index --no-cache-dir dist/*.whl && \
     rm -rf dist ./*.egg-info
 
-ENV API_GRAPHQL_HOST=graphql \
+ENV API_GRAPHQL_HOST=localhost \
     API_GRAPHQL_PORT=30004 \
     API_GRAPHQL_USER=admin \
     API_GRAPHQL_PASSWORD=password
