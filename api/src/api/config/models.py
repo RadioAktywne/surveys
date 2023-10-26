@@ -24,7 +24,7 @@ class GraphQLConfig(BaseModel):
     """Configuration for the GraphQL service."""
 
     host: str = Field(
-        "graphql",
+        "localhost",
         title="Host",
         description="Host of the GraphQL service.",
     )
