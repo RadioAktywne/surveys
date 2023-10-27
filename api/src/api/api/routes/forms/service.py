@@ -300,7 +300,7 @@ class Service:
         return response.submission
 
     async def _submit_form_field(
-        self, submission: str, field: str, data: dm.FieldSubmission, token: str
+        self, submission: str, field: str, data: Any, token: str
     ) -> None:
         """Submit form field."""
 
@@ -309,7 +309,7 @@ class Service:
             field=gm.SubmissionFieldData(
                 token=token,
                 field=field,
-                data=json.dumps(data.model_dump(mode="json").get("value")),
+                data=json.dumps(data),
             ),
         )
 
@@ -321,7 +321,7 @@ class Service:
             raise GraphQLError() from e
 
     async def _submit_form_fields(
-        self, submission: str, fields: dict[str, dm.FieldSubmission], token: str
+        self, submission: str, fields: dict[str, Any], token: str
     ) -> None:
         """Submit form fields."""
 
