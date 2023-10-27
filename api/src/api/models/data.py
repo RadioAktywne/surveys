@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from typing import Annotated, Any, Literal
 
@@ -592,197 +593,6 @@ class SubmissionMetadata(SerializableModel):
     )
 
 
-class CheckboxFieldSubmission(SerializableModel):
-    """Checkbox field submission."""
-
-    type: Literal["checkbox"] = Field(
-        ...,
-        title="CheckboxFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: list[str] = Field(
-        ...,
-        title="CheckboxFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-    @field_validator("value", mode="before")
-    @classmethod
-    def _validate_value(cls, v: Any) -> Any:
-        """Validate value."""
-
-        if isinstance(v, str):
-            return v.split(",")
-
-        return v
-
-
-class DateFieldSubmission(SerializableModel):
-    """Date field submission."""
-
-    type: Literal["date"] = Field(
-        ...,
-        title="DateFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: date = Field(
-        ...,
-        title="DateFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class DropdownFieldSubmission(SerializableModel):
-    """Dropdown field submission."""
-
-    type: Literal["dropdown"] = Field(
-        ...,
-        title="DropdownFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="DropdownFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class EmailFieldSubmission(SerializableModel):
-    """Email field submission."""
-
-    type: Literal["email"] = Field(
-        ...,
-        title="EmailFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="EmailFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class NumberFieldSubmission(SerializableModel):
-    """Number field submission."""
-
-    type: Literal["number"] = Field(
-        ...,
-        title="NumberFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: float = Field(
-        ...,
-        title="NumberFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class RadioFieldSubmission(SerializableModel):
-    """Radio field submission."""
-
-    type: Literal["radio"] = Field(
-        ...,
-        title="RadioFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="RadioFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class SliderFieldSubmission(SerializableModel):
-    """Slider field submission."""
-
-    type: Literal["slider"] = Field(
-        ...,
-        title="SliderFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: float = Field(
-        ...,
-        title="SliderFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class TextareaFieldSubmission(SerializableModel):
-    """Textarea field submission."""
-
-    type: Literal["textarea"] = Field(
-        ...,
-        title="TextareaFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="TextareaFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class TextFieldSubmission(SerializableModel):
-    """Text field submission."""
-
-    type: Literal["text"] = Field(
-        ...,
-        title="TextFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="TextFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class UrlFieldSubmission(SerializableModel):
-    """URL field submission."""
-
-    type: Literal["url"] = Field(
-        ...,
-        title="UrlFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: str = Field(
-        ...,
-        title="UrlFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-class YesNoFieldSubmission(SerializableModel):
-    """Yes/no field submission."""
-
-    type: Literal["yes-no"] = Field(
-        ...,
-        title="YesNoFieldSubmission.Type",
-        description="Type of the field.",
-    )
-    value: bool = Field(
-        ...,
-        title="YesNoFieldSubmission.Value",
-        description="Value of the field.",
-    )
-
-
-FieldSubmission = Annotated[
-    CheckboxFieldSubmission
-    | DateFieldSubmission
-    | DropdownFieldSubmission
-    | EmailFieldSubmission
-    | NumberFieldSubmission
-    | RadioFieldSubmission
-    | SliderFieldSubmission
-    | TextareaFieldSubmission
-    | TextFieldSubmission
-    | UrlFieldSubmission
-    | YesNoFieldSubmission,
-    Field(discriminator="type"),
-]
-
-
 class Submission(SerializableModel):
     """Submission data."""
 
@@ -791,11 +601,21 @@ class Submission(SerializableModel):
         title="Submission.Metadata",
         description="Metadata of the submission.",
     )
-    fields: dict[str, FieldSubmission] = Field(
+    fields: dict[str, Any] = Field(
         ...,
         title="Submission.Fields",
         description="Fields of the submission.",
     )
+
+    @field_validator("fields", mode="before")
+    @classmethod
+    def _validate_fields(cls, v: Any) -> Any:
+        """Validate fields."""
+
+        try:
+            return json.loads(json.dumps(v))
+        except (TypeError, json.JSONDecodeError) as e:
+            raise ValueError("fields must be a valid JSON") from e  # noqa: TRY003
 
 
 class SubmissionConfirmation(SerializableModel):
