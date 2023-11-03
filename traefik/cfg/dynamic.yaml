@@ -1,6 +1,12 @@
 http:
   middlewares:
-    api:
+    api-cors:
+      headers:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders: "*"
+        accessControlAllowMethods: "*"
+        accessControlAllowOriginList: "*"
+    api-strip:
       stripPrefix:
         forceSlash: false
         prefixes:
@@ -21,7 +27,8 @@ http:
   routers:
     api:
       middlewares:
-        - api
+        - api-cors
+        - api-strip
       rule: PathPrefix(`/api`)
       service: api
     graphql:
